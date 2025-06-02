@@ -91,7 +91,7 @@ export declare class BatchedAccumulator<ItemType> {
      *
      * @param item The item to accumulate.
      */
-    accumulateItem(item: ItemType): void;
+    push(item: ItemType): void;
     /**
      * Extracts and returns the accumulated batches as a 2D array, where each batch
      * is a fixed-size array of `ItemType` items. The last batch may contain fewer

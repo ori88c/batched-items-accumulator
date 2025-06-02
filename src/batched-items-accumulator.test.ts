@@ -39,7 +39,7 @@ function runHappyPathTest(
   for (let cycle = 0; cycle < numberOfAccumulationCycles; ++cycle) {
     // Act: Accumulate items and assert intermediate state after each insertion.
     for (let item = 1; item <= numberOfItems; ++item) {
-      accumulator.accumulateItem(item);
+      accumulator.push(item);
       // 'item' also represents the number of accumulated items at this stage.
       assertAccumulatorState(accumulator, batchSize, item);
     }

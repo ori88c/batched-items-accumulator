@@ -115,7 +115,7 @@ export class BatchedAccumulator<ItemType> {
    *
    * @param item The item to accumulate.
    */
-  public accumulateItem(item: ItemType): void {
+  public push(item: ItemType): void {
     const lastBatch = this._batches.at(-1);
 
     if (lastBatch === undefined || lastBatch.length === this._batchSize) {

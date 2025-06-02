@@ -1,6 +1,6 @@
 {
   "name": "batched-items-accumulator",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "A lightweight utility for Node.js projects that accumulates items into fixed-size batches (number-of-items wise), preserving insertion order. Streams items directly into batches at runtime, eliminating the overhead of post-processing a 1D array - a common approach in other batch or chunk-oriented packages. It abstracts batch management, allowing users to focus on application logic. Ideal for delayed processing tasks such as bulk write operations to databases, blob storage, and batched publishing of Kafka messages.",
   "repository": {
     "type": "git",

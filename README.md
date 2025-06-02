@@ -9,6 +9,8 @@ Given a `BatchedAccumulator` instance with a batch size of 4, inserting the item
 * [1, 2, 3, 4] (a full batch)
 * [5, 6, 7] (a partial batch with the remaining items)
 
+**Note:** If you need to group items into fixed-size batches **per key** - for example, Kafka messages **per topic** or MongoDB documents **per collection** - to accumulate them before periodic bulk publishing or writing, consider using the keyed version of this package for improved usability: [keyed-batched-items-accumulator](https://www.npmjs.com/package/keyed-batched-items-accumulator).
+
 ## Table of Contents
 
 * [Key Features](#key-features)
@@ -16,13 +18,14 @@ Given a `BatchedAccumulator` instance with a batch size of 4, inserting the item
 * [Getter Methods](#getter-methods)
 * [Use Case Example: Batch Upsert for MongoDB Documents](#use-case-example)
 * [Design Decision: No Peeking](#no-peeking)
+* [Breaking Change in Version 2.0.0](#breaking-change-2)
 * [License](#license)
 
 ## Key Features :sparkles:<a id="key-features"></a>
 
 * __Designed for Efficient Bulk Data Preparation :package:__: Applications often accumulate data from user interactions or message queues before persisting them in bulk to storage solutions like Amazon S3, Azure Blob Storage, or a database. To reduce network overhead, items are temporarily stored in memory and written in bulk, once a sufficient number has been collected or a timeout has been reached.
 * __Streaming-Friendly Accumulation :ocean:__: Items are accumulated into batches **during runtime**, eliminating the need for a **post-processing** step that chunks a 1D array - a common approach in other packages. Post-processing chunking adds **O(n) time and space** complexity, which can degrade performance when batch processing is frequent or batch sizes are large. In contrast, this package’s `extractAccumulatedBatches` method operates in **O(1) time and space**, as items are stored in batches from the start.
-* __Fixed-Size Batches :straight_ruler:__: The `accumulateItem` method appends the item to the most recent batch if it has not yet reached the size threshold. Otherwise, it creates a new batch. Each batch contains the same number of items, except for the last batch, which may have fewer items.
+* __Fixed-Size Batches :straight_ruler:__: The `push` method appends the item to the most recent batch if it has not yet reached the size threshold. Otherwise, it creates a new batch. Each batch contains the same number of items, except for the last batch, which may have fewer items.
 * __Zero Overhead :dart:__: While simple in design, this class serves as a **building block** for more complex solutions. It abstracts batch management, allowing users to focus on their application logic while leveraging a well-tested, efficient batching mechanism.
 - __State Metrics :bar_chart:__: The `batchesCount`, `isEmpty` and `accumulatedItemsCount` getters offer real-time insights into the accumulator's state, helping users make informed decisions, such as determining whether a minimum threshold of accumulated items has been reached before extracting batches.
 - __Comprehensive documentation :books:__: Fully documented, enabling IDEs to provide intelligent **tooltips** for an enhanced development experience.
@@ -35,7 +38,7 @@ Given a `BatchedAccumulator` instance with a batch size of 4, inserting the item
 
 The `BatchedAccumulator` class provides the following methods:
 
-* __accumulateItem__: Adds an item to the accumulator, grouping it into a batch of fixed size. If the last batch is full or no batch exists, a new batch is created.
+* __push__: Adds an item to the accumulator, grouping it into a batch of fixed size. If the last batch is full or no batch exists, a new batch is created.
 * __extractAccumulatedBatches__: Extracts and returns the accumulated batches as a 2D array, where each batch is a fixed-size array of items. The last batch may contain fewer elements if the total count is not a multiple of the batch size. Calling this method **transfers ownership** of the extracted batches to the caller, meaning the instance will **no longer retain them**. The accumulator is reset, clearing its internal storage to begin a new accumulation cycle.
 
 If needed, refer to the code documentation for a more comprehensive description of each method.
@@ -111,7 +114,7 @@ class PeriodicDocumentFlusher<DocumentType> {
 
   public add(doc: DocumentType): void {
     // Accumulate documents in memory for batch processing.
-    this._documentsAccumulator.accumulateItem(doc);
+    this._documentsAccumulator.push(doc);
   }
 
   private async _bulkUpsert(batch: DocumentType[]): Promise<void> {
@@ -156,6 +159,10 @@ class PeriodicDocumentFlusher<DocumentType> {
 To maintain integrity, the class **does not provide direct access** to accumulated items or batches. Exposing internal references could allow unintended modifications, such as appending items to a full batch. Instead, the `extractAccumulatedBatches` method **transfers ownership** of all batches to the caller while resetting the instance to a clean state. This ensures the component's guarantees remain intact and prevents accidental modifications of extracted batches.
 
 However, while direct peeking is not possible, users can utilize the getter methods `batchesCount`, `isEmpty`, and `accumulatedItemsCount` to assess whether extraction is needed.
+
+## Breaking Change in Version 2.0.0 :warning:<a id="breaking-change-2"></a>
+
+Method `accumulateItem` has been renamed to `push` to improve fluency and readability.
 
 ## License :scroll:<a id="license"></a>
 

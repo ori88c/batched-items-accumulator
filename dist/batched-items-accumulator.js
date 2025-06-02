@@ -110,7 +110,7 @@ class BatchedAccumulator {
      *
      * @param item The item to accumulate.
      */
-    accumulateItem(item) {
+    push(item) {
         const lastBatch = this._batches.at(-1);
         if (lastBatch === undefined || lastBatch.length === this._batchSize) {
             // No batch exists yet in the current cycle (after the last extraction),
